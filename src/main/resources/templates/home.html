@@ -1,0 +1,49 @@
+<html>
+<body>
+<pre>
+    $!{value1}
+    $!{value2} ## 如果不存在,强制为空
+    ${value3}
+
+    colos:$!{colors}
+
+    #foreach($color in $colors)
+        This is color: $!{foreach.index},$color,$!{foreach.count}
+    #end
+
+    #foreach($key in $map.keySet())
+        k:$key v:$map.get($key)
+    #end
+
+    #foreach($entry in $map.entrySet())
+        k:$entry.key v:$entry.value
+    #end
+
+    $!{user.name}
+    $!{user.description}
+    $!{user.getDescription()}
+
+    #set($title = "nowcoder_title")
+    Title:$!{title}
+
+    Parse: #parse("header.html")
+    Include: #include("header.html")
+
+    #macro (render_color,$index,$color)
+        Color Render Macro $index,$color
+    #end
+
+    #foreach($color in $colors)
+        #render_color($foreach.index,$color)
+    #end
+
+    #set($hello = "hello")
+    #set($helloworld = "$!{hello} world")
+    $!{hello}
+    $!{helloworld}
+    #set($helloworld2 = '$!{hello} world')
+    $!{helloworld2}
+
+</pre>
+</body>
+</html>
