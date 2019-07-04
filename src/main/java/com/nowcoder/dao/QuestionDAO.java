@@ -18,6 +18,9 @@ public interface QuestionDAO {
                                         @Param("offset") int offset,
                                         @Param("limit") int limit);
 
+    @Select("select id,title,content,user_id,created_date,comment_count from question where id=#{id}")
+    Question selectQuestionById(int id);
+
 
 
 }

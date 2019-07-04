@@ -14,12 +14,17 @@ public class QuestionService {
     @Autowired
     private QuestionDAO questionDAO;
 
+    @Autowired
+    private SensitiveService sensitiveService;
+
     // 发起提问
     public int addQuestion(Question question) {
         // html过滤,不让用户输入的<script>alert("hello");</script>起作用
         question.setContent(HtmlUtils.htmlEscape(question.getContent()));
         question.setTitle(HtmlUtils.htmlEscape(question.getTitle()));
         // 敏感词过滤
+        question.setContent(sensitiveService.filter(question.getContent()));
+        question.setTitle(sensitiveService.filter(question.getTitle()));
 
 
         // questionDAO.addQuestion(question)>0 ?用于判断修改的行数
@@ -29,5 +34,9 @@ public class QuestionService {
 
     public List<Question> selectLatestQuestions(int userId,int offset,int limit) {
         return questionDAO.selectLatestQuestions(userId,offset,limit);
+    }
+
+    public Question selectQuestionById(int id) {
+        return questionDAO.selectQuestionById(id);
     }
 }

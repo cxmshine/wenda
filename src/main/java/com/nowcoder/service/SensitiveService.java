@@ -1,6 +1,7 @@
 package com.nowcoder.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,10 @@ public class SensitiveService implements InitializingBean {
         TrieNode tempNode = rootNode;
         for(int i=0;i<lineTxt.length();i++) {
             Character c = lineTxt.charAt(i);
+
+            if(isSymbol(c)) {
+                continue;
+            }
 
             TrieNode node = tempNode.getSubNode(c);
             if(node==null) {
@@ -79,6 +84,14 @@ public class SensitiveService implements InitializingBean {
     // 词典树的根
     private TrieNode rootNode = new TrieNode();
 
+    // 对过滤算法进行增强
+    // 没有这个方法之前,无法对"你好色 情"进行过滤;增加这个方法后,能够顺利地将"你好色 情"过滤出来
+    private boolean isSymbol(char c) {
+        int ic = (int)c;
+        // 东亚文字 0x2E80 - 0x9FFF
+        return !CharUtils.isAsciiAlphanumeric(c) && (ic< 0x2E80 || ic>0x9FFF);
+    }
+
     // 核心方法
     public String filter(String text) {
         if(StringUtils.isBlank(text)) {
@@ -96,6 +109,15 @@ public class SensitiveService implements InitializingBean {
 
         while (position < text.length()) {
             char c = text.charAt(position);
+
+            if(isSymbol(c)) {
+                if(tempNode == rootNode) {
+                    result.append(c);
+                    begin++;
+                }
+                position++;
+                continue;
+            }
 
             tempNode = tempNode.getSubNode(c);
 
@@ -125,6 +147,6 @@ public class SensitiveService implements InitializingBean {
         SensitiveService s = new SensitiveService();
         s.addWord("色情");
         s.addWord("赌博");
-        System.out.println(s.filter("你好色情"));
+        System.out.println(s.filter("你好色 情"));
     }
 }
