@@ -1,6 +1,7 @@
 package com.nowcoder.dao;
 
 import com.nowcoder.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.*;
 
 @Mapper

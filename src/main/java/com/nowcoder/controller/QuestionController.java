@@ -1,7 +1,7 @@
 package com.nowcoder.controller;
 
-import com.nowcoder.model.HostHolder;
-import com.nowcoder.model.Question;
+import com.nowcoder.model.*;
+import com.nowcoder.service.CommentService;
 import com.nowcoder.service.QuestionService;
 import com.nowcoder.service.UserService;
 import com.nowcoder.util.WendaUtil;
@@ -11,7 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Controller
 @Slf4j
@@ -25,6 +27,10 @@ public class QuestionController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CommentService commentService;
+
 
     @RequestMapping(value = "question/add",method = RequestMethod.POST)
     @ResponseBody
@@ -57,7 +63,18 @@ public class QuestionController {
     public String quesionDetail(Model model, @PathVariable("qid") int qid) {
         Question question = questionService.selectQuestionById(qid);
         model.addAttribute("question",question);
-        model.addAttribute("user",userService.getUser(question.getUserId()));
+
+        List<Comment> commentList = commentService.selectCommentByEntity(qid, EntityType.ENTITY_QUESTION);
+        // 每个评论体,不仅有comment,还有用户的相关信息(头像以及用户名等),所以封装成ViewObject返回
+        List<ViewObject> comments = new ArrayList<>();
+        for(Comment comment : commentList) {
+            ViewObject vo = new ViewObject();
+            vo.set("comment",comment);
+            vo.set("user",userService.getUser(comment.getUserId()));
+            comments.add(vo);
+        }
+
+        model.addAttribute("comments",comments);
         return "detail";
     }
 }

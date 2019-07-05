@@ -4,6 +4,7 @@ import com.nowcoder.model.Comment;
 import com.nowcoder.model.EntityType;
 import com.nowcoder.model.HostHolder;
 import com.nowcoder.service.CommentService;
+import com.nowcoder.service.QuestionService;
 import com.nowcoder.util.WendaUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class CommentController {
     @Autowired
     private HostHolder hostHolder;
 
+    @Autowired
+    private QuestionService questionService;
+
 
     @RequestMapping(path = "/addComment",method = RequestMethod.POST)
     public String addComment(@RequestParam("questionId") int questionId,
@@ -41,6 +45,9 @@ public class CommentController {
             comment.setEntityType(EntityType.ENTITY_QUESTION);
             comment.setEntityId(questionId);
             commentService.addComment(comment);
+
+            int count = commentService.getCommentCount(comment.getEntityId(),comment.getEntityType());
+            questionService.updateCommentCount(questionId,count);
         } catch (Exception e) {
             log.error("增加评论失败",e.getMessage());
         }

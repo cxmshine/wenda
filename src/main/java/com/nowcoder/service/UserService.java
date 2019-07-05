@@ -133,4 +133,8 @@ public class UserService {
     public User getUser(int id) {
         return userDAO.selectById(id);
     }
+
+    public User selectUserByName(String name) {
+        return userDAO.selectByName(name);
+    }
 }
