@@ -35,7 +35,24 @@ public class MessageController {
 
 
     @RequestMapping(path = "msg/list",method = RequestMethod.GET)
-    public String getConversationList() {
+    public String getConversationList(Model model) {
+        // 如果用户未登录,重定向到注册登录页面
+        if(hostHolder.getUser()==null) {
+            return "redirect:/reglogin";
+        }
+        int localUserId = hostHolder.getUser().getId();
+        List<Message> conversationList = messageService.getConversationList(localUserId, 0, 10);
+        List<ViewObject> conversations = new ArrayList<>();
+        for (Message message : conversationList) {
+            ViewObject vo = new ViewObject();
+            vo.set("message",message);
+            // 会话的另一方是谁
+            int targetId = message.getFromId() == localUserId ? message.getToId() : message.getFromId();
+            vo.set("user",userService.getUser(targetId));
+            vo.set("unread",messageService.getConvesationUnreadCount(localUserId,message.getConversationId()));
+            conversations.add(vo);
+        }
+        model.addAttribute("conversations",conversations);
         return "letter";
     }
 
