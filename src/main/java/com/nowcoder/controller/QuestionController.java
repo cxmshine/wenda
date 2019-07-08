@@ -2,6 +2,7 @@ package com.nowcoder.controller;
 
 import com.nowcoder.model.*;
 import com.nowcoder.service.CommentService;
+import com.nowcoder.service.LikeService;
 import com.nowcoder.service.QuestionService;
 import com.nowcoder.service.UserService;
 import com.nowcoder.util.WendaUtil;
@@ -30,6 +31,9 @@ public class QuestionController {
 
     @Autowired
     private CommentService commentService;
+
+    @Autowired
+    private LikeService likeService;
 
 
     @RequestMapping(value = "question/add",method = RequestMethod.POST)
@@ -70,6 +74,18 @@ public class QuestionController {
         for(Comment comment : commentList) {
             ViewObject vo = new ViewObject();
             vo.set("comment",comment);
+
+            // liked表示是否喜欢
+            if(hostHolder.getUser() == null ) {
+                // 如果未登录,那么就是既没点赞又没点踩,likeStatus值为0
+                vo.set("liked",0);
+            } else {
+                vo.set("liked",likeService.getLikeStatus(hostHolder.getUser().getId(),EntityType.ENTITY_COMMENT,comment.getId()));
+            }
+
+            // 赞同数
+            vo.set("likeCount",likeService.getLikeCount(EntityType.ENTITY_COMMENT,comment.getId()));
+
             vo.set("user",userService.getUser(comment.getUserId()));
             comments.add(vo);
         }
