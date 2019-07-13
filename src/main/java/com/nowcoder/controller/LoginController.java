@@ -1,5 +1,8 @@
 package com.nowcoder.controller;
 
+import com.nowcoder.async.EventModel;
+import com.nowcoder.async.EventProducer;
+import com.nowcoder.async.EventType;
 import com.nowcoder.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +25,8 @@ public class LoginController {
     @Autowired
     private UserService userService;
 
+//    @Autowired
+//    EventProducer eventProducer;
 
     /**
      * 注册功能
@@ -76,11 +81,16 @@ public class LoginController {
                         @RequestParam(value = "rememberme",defaultValue = "false") boolean rememberme,
                         HttpServletResponse response) {
         try {
-            Map<String, String> map = userService.login(username, password);
+            Map<String, Object> map = userService.login(username, password);
             if(map.containsKey("ticket")) {
-                Cookie cookie = new Cookie("ticket",map.get("ticket"));
+                Cookie cookie = new Cookie("ticket",map.get("ticket").toString());
                 cookie.setPath("/");
                 response.addCookie(cookie);
+
+//                eventProducer.fireEvent(new EventModel(EventType.LOGIN)
+//                        .setExt("username", username).setExt("email", "zjuyxy@qq.com")
+//                        .setActorId((int)map.get("userId")));
+
                 if(StringUtils.isNotBlank(next)) {
                     return "redirect:"+next;
                 }

@@ -38,4 +38,8 @@ public class CommentService {
         // status的状态为1时,表示删除评论
         return commentDAO.updateStatus(commentId,1) > 0;
     }
+
+    public Comment getCommentById(int id) {
+        return commentDAO.getCommentById(id);
+    }
 }

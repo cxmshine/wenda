@@ -12,6 +12,8 @@ public class WendaUtil {
 
     // QuestionController中需要它.发布问题时,如果未登录,则给该问题指定一个匿名用户id为3
     public static int ANONYMOUS_USERID = 3;
+    // 管理员的ID,以管理员的身份发送站内信
+    public static int SYSTEM_USERID = 4;
 
     // 两个关于JSON解析的方法
     // 关于code:若执行成功,code值为0;执行失败,则code值为1

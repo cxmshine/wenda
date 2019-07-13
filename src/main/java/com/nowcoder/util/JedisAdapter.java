@@ -11,12 +11,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Tuple;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class JedisAdapter implements InitializingBean {
 
     private JedisPool pool;
-
 
     public static void print(int index,Object obj) {
         System.out.println(String.format("%d,%s",index,obj.toString()));
@@ -27,6 +28,7 @@ public class JedisAdapter implements InitializingBean {
         // 每次执行前,将原来redis数据库中的内容清空
         jedis.flushDB();
 
+        // value为String类型
         jedis.set("hello","world");
         print(1,jedis.get("hello"));
         jedis.rename("hello","newhello");
@@ -34,7 +36,7 @@ public class JedisAdapter implements InitializingBean {
         // 15秒后即失效
         jedis.setex("hello2",15,"world");
 
-        // 测试加减操作
+        // 测试加减操作   [value为String类型]
         jedis.set("pv","100");
         jedis.incr("pv");
         jedis.incrBy("pv",5);
@@ -44,10 +46,12 @@ public class JedisAdapter implements InitializingBean {
 
         print(3,jedis.keys("*"));
 
-        // list
+        // value为list类型
         String listName = "list";
         jedis.del(listName);
         for (int i=0;i<10;i++) {
+            // 一共插入10个元素,最先插入的"a0"会一直被"推"着往右走,它是最后一个元素 [有栈的味道]
+            // 如果是rpush就反过来了.
             jedis.lpush(listName,"a"+String.valueOf(i));
         }
 
@@ -62,7 +66,7 @@ public class JedisAdapter implements InitializingBean {
         print(10,jedis.linsert(listName, BinaryClient.LIST_POSITION.BEFORE,"a4","bb"));
         print(11,jedis.lrange(listName,0,12));
 
-        // hash
+        // value为hash类型
         String userKey = "userxx";
         jedis.hset(userKey,"name","jim");
         jedis.hset(userKey,"age","12");
@@ -80,6 +84,7 @@ public class JedisAdapter implements InitializingBean {
         jedis.hsetnx(userKey,"name","tom");
         print(19,jedis.hgetAll(userKey));
 
+        // value为set类型
         String likeKey1 = "commentLike1";
         String likeKey2 = "commentLike2";
         for (int i=0;i<10;i++) {
@@ -102,7 +107,7 @@ public class JedisAdapter implements InitializingBean {
         // 当前集合中有多少个元素
         print(29,jedis.scard(likeKey1));
 
-        // zset
+        // value为zset类型
         String rankKey = "rankKey";
         jedis.zadd(rankKey,15,"jim");
         jedis.zadd(rankKey,60,"Ben");
@@ -111,7 +116,7 @@ public class JedisAdapter implements InitializingBean {
         jedis.zadd(rankKey,80,"Mei");
         // 计数
         print(30,jedis.zcard(rankKey));
-        // 61和100之间的有多少个
+        // score介于61和100之间的有多少个
         print(31,jedis.zcount(rankKey,61,100));
         print(32,jedis.zscore(rankKey,"Lucy"));
         jedis.zincrby(rankKey,2,"Lucy");
@@ -149,7 +154,7 @@ public class JedisAdapter implements InitializingBean {
         print(43,jedis.zrange(setKey,0,10));
         //jedis.zremrangeByLex(setKey,"(c","+");
         print(44,jedis.zrange(setKey,0,1));
-
+/*
         JedisPool pool = new JedisPool();
         for (int i=0;i<100;i++) {
             Jedis j = pool.getResource();
@@ -157,7 +162,9 @@ public class JedisAdapter implements InitializingBean {
             //print(45,j.get("pv"));
             j.close();
         }
+*/
 
+        // value为String类型
         // 简单的缓存示例
         // 将对象缓存到redis中
         User user1 = new User();
@@ -173,8 +180,7 @@ public class JedisAdapter implements InitializingBean {
         String value = jedis.get("user1");
         User user2 = JSON.parseObject(value,User.class);
         print(47,user2);
-        int k = 2;
-
+        //int k = 2;
     }
 
     @Override
@@ -240,5 +246,37 @@ public class JedisAdapter implements InitializingBean {
             }
         }
         return false;
+    }
+
+    // 下面2个方法为高级课第8次新增的
+
+    public List<String> brpop(int timeout, String key) {
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            return jedis.brpop(timeout, key);
+        } catch (Exception e) {
+            log.error("发生异常" + e.getMessage());
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return null;
+    }
+
+    public long lpush(String key, String value) {
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            return jedis.lpush(key, value);
+        } catch (Exception e) {
+            log.error("发生异常" + e.getMessage());
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return 0;
     }
 }

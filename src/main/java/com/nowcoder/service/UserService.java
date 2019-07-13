@@ -71,8 +71,8 @@ public class UserService {
      * @param password
      * @return
      */
-    public Map<String,String> login(String username,String password) {
-        Map<String,String> map = new HashMap<>();
+    public Map<String,Object> login(String username,String password) {
+        Map<String,Object> map = new HashMap<>();
         // 判断登录的用户名和密码是否有问题
         if(StringUtils.isBlank(username)) {
             map.put("msg","用户名不能为空");
