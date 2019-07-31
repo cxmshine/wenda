@@ -288,7 +288,6 @@ public class JedisAdapter implements InitializingBean {
             return jedis.multi();
         } catch (Exception e) {
             log.error("发生异常" + e.getMessage());
-        } finally {
         }
         return null;
     }
