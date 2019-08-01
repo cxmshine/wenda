@@ -1,5 +1,8 @@
 package com.nowcoder.controller;
 
+import com.nowcoder.async.EventModel;
+import com.nowcoder.async.EventProducer;
+import com.nowcoder.async.EventType;
 import com.nowcoder.model.Comment;
 import com.nowcoder.model.EntityType;
 import com.nowcoder.model.HostHolder;
@@ -28,32 +31,36 @@ public class CommentController {
     @Autowired
     private QuestionService questionService;
 
+    @Autowired
+    EventProducer eventProducer;
 
-    @RequestMapping(path = "/addComment",method = RequestMethod.POST)
+
+    @RequestMapping(path = {"/addComment"}, method = {RequestMethod.POST})
     public String addComment(@RequestParam("questionId") int questionId,
                              @RequestParam("content") String content) {
         try {
             Comment comment = new Comment();
             comment.setContent(content);
-            if(hostHolder.getUser()!=null) {
+            if (hostHolder.getUser() != null) {
                 comment.setUserId(hostHolder.getUser().getId());
             } else {
-                // 如果用户未登录,则设定一个匿名userId
                 comment.setUserId(WendaUtil.ANONYMOUS_USERID);
+                // return "redirect:/reglogin";
             }
             comment.setCreatedDate(new Date());
             comment.setEntityType(EntityType.ENTITY_QUESTION);
             comment.setEntityId(questionId);
             commentService.addComment(comment);
 
-            int count = commentService.getCommentCount(comment.getEntityId(),comment.getEntityType());
-            questionService.updateCommentCount(questionId,count);
+            int count = commentService.getCommentCount(comment.getEntityId(), comment.getEntityType());
+            questionService.updateCommentCount(comment.getEntityId(), count);
+
+            eventProducer.fireEvent(new EventModel(EventType.COMMENT).setActorId(comment.getUserId())
+                    .setEntityId(questionId));
+
         } catch (Exception e) {
-            log.error("增加评论失败",e.getMessage());
+            log.error("增加评论失败" + e.getMessage());
         }
-
         return "redirect:/question/" + questionId;
-
-
     }
 }
