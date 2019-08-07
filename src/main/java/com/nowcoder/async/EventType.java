@@ -16,7 +16,9 @@ public enum EventType {
     // 关注
     FOLLOW(4),
     // 取消关注
-    UNFOLLOW(5);
+    UNFOLLOW(5),
+    // 新增问题
+    ADD_QUESTION(6);
 
     private int value;
     EventType(int value) {
